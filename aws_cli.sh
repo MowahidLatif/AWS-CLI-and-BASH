@@ -45,6 +45,9 @@ sudo mv ./kubectl /usr/local/bin/kubectl
 # Verify the installation
 kubectl version --client
 
+
+
+
 #create vpc with cidr block /16
 aws_response=$(aws ec2 create-vpc \
  --cidr-block "$vpcCidrBlock" \
@@ -164,7 +167,8 @@ do
     JOIN_COMMAND=$(ssh -i $KEY_NAME.pem ubuntu@$MASTER_IP_ADDRESS "sudo kubeadm token create --print-join-command")
     ssh -i $KEY_NAME.pem ubuntu@$WORKER_IP_ADDRESS "$JOIN_COMMAND"
 
-##########################################
+######
+######
 
 echo " "
 echo "VPC created:"
