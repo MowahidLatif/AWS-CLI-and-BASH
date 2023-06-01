@@ -22,32 +22,6 @@ echo "Creating VPC..."
 # Update the package lists for upgrades and new package installations
 sudo apt-get update
 
-# AWS CLI installation
-echo "Installing AWS CLI"
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-sudo ./aws/install
-
-# Verify the installation
-aws --version
-
-# AWS CLI configuration
-aws configure set aws_access_key_id "$YOUR_AWS_ACCESS_KEY"
-aws configure set aws_secret_access_key "$YOUR_AWS_SECRET_ACCESS_KEY"
-aws configure set default.region "$YOUR_PREFERRED_REGION"
-
-# Install kubectl
-echo "Installing kubectl"
-curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-chmod +x ./kubectl
-sudo mv ./kubectl /usr/local/bin/kubectl
-
-# Verify the installation
-kubectl version --client
-
-
-
-
 #create vpc with cidr block /16
 aws_response=$(aws ec2 create-vpc \
  --cidr-block "$vpcCidrBlock" \
@@ -143,31 +117,27 @@ associate_response=$(aws ec2 associate-route-table \
  --route-table-id "$routeTableId")
 
 # Define your parameters
-IMAGE_ID=ami-0abcdef1234567890 # replace with a real image ID for your chosen OS
-INSTANCE_TYPE=t2.micro
-KEY_NAME=my-key-pair
-SECURITY_GROUP_ID=sg-123abc45d # replace with a real security group
-SUBNET_ID=subnet-1a2b3c4d # replace with a real subnet
+imageId=ami-0abcdef1234567890 # replace with a real image ID for your chosen OS
+instanceType=t2.micro
+keyName=my-key-pair
+subnetId=subnet-1a2b3c4d # replace with a real subnet
 
-###### AWS CLI and kubectl installed and configured with the appropriate AWS credentials, 
 ###### and that you have an SSH key pair available for connecting to your instances.
 
-
 # Launch the master node
-MASTER_INSTANCE_ID=$(aws ec2 run-instances --image-id $IMAGE_ID --count 1 --instance-type $INSTANCE_TYPE --key-name $KEY_NAME --security-group-ids $SECURITY_GROUP_ID --subnet-id $SUBNET_ID --query 'Instances[0].InstanceId' --output text)
-echo "Launched master EC2 instance with ID: $MASTER_INSTANCE_ID."
+masterInstanceId=$(aws ec2 run-instances --image-id $imageId --count 1 --instance-type $instanceType --key-name $keyName --security-group-ids $groupId --subnet-id $subnetId --query 'Instances[0].InstanceId' --output text)
+echo "Launched master EC2 instance with ID: $masterInstanceId."
 
 # Launch the worker nodes
 for i in {1..2}
 do
-    WORKER_INSTANCE_ID=$(aws ec2 run-instances --image-id $IMAGE_ID --count 1 --instance-type $INSTANCE_TYPE --key-name $KEY_NAME --security-group-ids $SECURITY_GROUP_ID --subnet-id $SUBNET_ID --query 'Instances[0].InstanceId' --output text)
-    echo "Launched worker EC2 instance with ID: $WORKER_INSTANCE_ID."
+    workerInstanceId=$(aws ec2 run-instances --image-id $imageId --count 1 --instance-type $instanceType --key-name $keyName --security-group-ids $groupId --subnet-id $subnetId --query 'Instances[0].InstanceId' --output text)
+    echo "Launched worker EC2 instance with ID: $workerInstanceId."
 
     # Assuming you have Docker, kubeadm, kubelet, and kubectl installed on these nodes, join them to the master node
-    JOIN_COMMAND=$(ssh -i $KEY_NAME.pem ubuntu@$MASTER_IP_ADDRESS "sudo kubeadm token create --print-join-command")
-    ssh -i $KEY_NAME.pem ubuntu@$WORKER_IP_ADDRESS "$JOIN_COMMAND"
+    joinCommand=$(ssh -i $keyName.pem ubuntu@$masterIdAddress "sudo kubeadm token create --print-join-command")
+    ssh -i $keyName.pem ubuntu@$masterIdAddress "$joinCommand"
 
-######
 ######
 
 echo " "
@@ -175,3 +145,35 @@ echo "VPC created:"
 echo "Use subnet id $subnetId and security group id $groupId"
 echo "To create your AWS instances"
 # end of create-aws-vpc
+
+
+# Define your parameters
+# IMAGE_ID=ami-0abcdef1234567890 # replace with a real image ID for your chosen OS
+# INSTANCE_TYPE=t2.micro
+# KEY_NAME=my-key-pair
+# SECURITY_GROUP_ID=sg-123abc45d # replace with a real security group
+# SUBNET_ID=subnet-1a2b3c4d # replace with a real subnet
+
+
+
+###### and that you have an SSH key pair available for connecting to your instances.
+
+
+
+# # Launch the master node
+# MASTER_INSTANCE_ID=$(aws ec2 run-instances --image-id $IMAGE_ID --count 1 --instance-type $INSTANCE_TYPE --key-name $KEY_NAME --security-group-ids $SECURITY_GROUP_ID --subnet-id $SUBNET_ID --query 'Instances[0].InstanceId' --output text)
+# echo "Launched master EC2 instance with ID: $MASTER_INSTANCE_ID."
+
+# # Launch the worker nodes
+# for i in {1..2}
+# do
+#     WORKER_INSTANCE_ID=$(aws ec2 run-instances --image-id $IMAGE_ID --count 1 --instance-type $INSTANCE_TYPE --key-name $KEY_NAME --security-group-ids $SECURITY_GROUP_ID --subnet-id $SUBNET_ID --query 'Instances[0].InstanceId' --output text)
+#     echo "Launched worker EC2 instance with ID: $WORKER_INSTANCE_ID."
+
+#     # Assuming you have Docker, kubeadm, kubelet, and kubectl installed on these nodes, join them to the master node
+#     JOIN_COMMAND=$(ssh -i $KEY_NAME.pem ubuntu@$MASTER_IP_ADDRESS "sudo kubeadm token create --print-join-command")
+#     ssh -i $KEY_NAME.pem ubuntu@$WORKER_IP_ADDRESS "$JOIN_COMMAND"
+
+
+
+# ######
