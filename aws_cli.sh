@@ -128,16 +128,17 @@ associate_response=$(aws ec2 associate-route-table \
 
 # Launch the master node
 masterInstanceId=$(aws ec2 run-instances \
---image-id $imageId \
---count 1 \
---instance-type $instanceType \
---key-name $keyName \
---security-group-ids $groupId \
---subnet-id $subnetId \
---user-data "$userData" \
---tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=worker-node-01}]' \ 
---query 'Instances[0].InstanceId' \
---output text)
+  --image-id $imageId \
+  --count 1 \
+  --instance-type $instanceType \
+  --key-name $keyName \
+  --security-group-ids $groupId \
+  --subnet-id $subnetId \
+  --user-data "$userData" \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=worker-node-01}]' \ 
+  --query 'Instances[0].InstanceId' \
+  --output text)
+
 echo "Launched Master Node 1 EC2 instance with ID: $masterInstanceId."
 
 # Launch the worker nodes
