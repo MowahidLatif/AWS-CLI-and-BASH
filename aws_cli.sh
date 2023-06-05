@@ -18,6 +18,16 @@ destinationCidrBlock="0.0.0.0/0"
 # YOUR_AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY
 # YOUR_PREFERRED_REGION=YOUR_PREFERRED_REGION
 
+softwareInstallData='#!/bin/bash
+sudo apt-get update -y
+sudo apt-get upgrade -y
+sudo apt-get install -y python3.10
+curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+sudo apt-get install -y openjdk-11-jdk
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh'
+
 echo "Creating VPC..."
 
 #install AWS CLI and kubectl and assign appropriate AWS credentials 
@@ -113,16 +123,15 @@ route_response=$(aws ec2 create-route \
  --destination-cidr-block "$destinationCidrBlock" \
  --gateway-id "$gatewayId")
 
-#add route to subnet
+#add route table to subnet
 associate_response=$(aws ec2 associate-route-table \
  --subnet-id "$subnetId" \
  --route-table-id "$routeTableId")
 
-# Define your parameters <----------------------------------------------------------------- DELETE THOSE THAT ARE NOT IN USE. 
-# imageId=ami-0abcdef1234567890 # replace with a real image ID for your chosen OS
-# instanceType=t2.micro
+# Define your parameters 
+imageId=$(aws ec2 describe-images --owners 099720109477 --filters 'Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*' 'Name=state,Values=available' --query 'reverse(sort_by(Images, &CreationDate))[:1].ImageId' --output text)
+instanceType=t2.micro
 # keyName=my-key-pair
-# subnetId=subnet-1a2b3c4d # replace with a real subnet
 
 ###### and that you have an SSH key pair available for connecting to your instances.
 
@@ -134,7 +143,7 @@ masterInstanceId=$(aws ec2 run-instances \
   --key-name $keyName \
   --security-group-ids $groupId \
   --subnet-id $subnetId \
-  --user-data "$userData" \
+  --user-data "$softwareInstallData" \
   --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=worker-node-01}]' \ 
   --query 'Instances[0].InstanceId' \
   --output text)
@@ -149,7 +158,7 @@ workerInstance1Id=$(aws ec2 run-instances \
   --key-name $keyName \
   --security-group-ids $groupId \
   --subnet-id $subnetId \
-  --user-data "$userData" \
+  --user-data "$softwareInstallData" \
   --query 'Instances[0].InstanceId' \
   --output text)
 
@@ -162,7 +171,7 @@ workerInstance2Id=$(aws ec2 run-instances \
   --key-name $keyName \
   --security-group-ids $groupId \
   --subnet-id $subnetId \
-  --user-data "$userData" \
+  --user-data "$softwareInstallData" \
   --query 'Instances[0].InstanceId' \
   --output text)
 
