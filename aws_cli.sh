@@ -103,7 +103,8 @@ aws ec2 create-tags \
 #enable port 22
 security_response2=$(aws ec2 authorize-security-group-ingress \
  --group-id "$groupId" \
- --protocol tcp --port 22 \
+ --protocol tcp \
+ --port 22 \
  --cidr "$port22CidrBlock")
 
 #create route table for vpc
@@ -128,12 +129,16 @@ associate_response=$(aws ec2 associate-route-table \
  --subnet-id "$subnetId" \
  --route-table-id "$routeTableId")
 
+echo " "
+echo "VPC created:"
+echo "Use subnet id $subnetId and security group id $groupId"
+echo "To create your AWS instances"
+
 # Define your parameters 
 imageId=$(aws ec2 describe-images --owners 099720109477 --filters 'Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*' 'Name=state,Values=available' --query 'reverse(sort_by(Images, &CreationDate))[:1].ImageId' --output text)
 instanceType=t2.micro
-# keyName=my-key-pair
-
-###### and that you have an SSH key pair available for connecting to your instances.
+keyName=$(aws ec2 create-key-pair --key-name weclouddatakeypair --query 'KeyMaterial' --output text > weclouddatakeypair.pem)
+chmod 400 weclouddatakeypair.pem
 
 # Launch the master node
 masterInstanceId=$(aws ec2 run-instances \
@@ -144,13 +149,12 @@ masterInstanceId=$(aws ec2 run-instances \
   --security-group-ids $groupId \
   --subnet-id $subnetId \
   --user-data "$softwareInstallData" \
-  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=worker-node-01}]' \ 
-  --query 'Instances[0].InstanceId' \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=worker-node-01}]' --query 'Instances[0].InstanceId' \
   --output text)
 
 echo "Launched Master Node 1 EC2 instance with ID: $masterInstanceId."
 
-# Launch the worker nodes
+# Launch the worker node 1
 workerInstance1Id=$(aws ec2 run-instances \
   --image-id $imageId \
   --count 1 \
@@ -162,8 +166,9 @@ workerInstance1Id=$(aws ec2 run-instances \
   --query 'Instances[0].InstanceId' \
   --output text)
 
-echo "Launched Worker Node 1 EC2 instance with ID: $workerInstance2Id."
+echo "Launched Worker Node 1 EC2 instance with ID: $workerInstance1Id."
 
+# Launch the worker node 2
 workerInstance2Id=$(aws ec2 run-instances \
   --image-id $imageId \
   --count 1 \
@@ -177,8 +182,4 @@ workerInstance2Id=$(aws ec2 run-instances \
 
 echo "Launched Worker Node 2 EC2 instance with ID: $workerInstance2Id."
 
-echo " "
-echo "VPC created:"
-echo "Use subnet id $subnetId and security group id $groupId"
-echo "To create your AWS instances"
 # end of create-aws-vpc
