@@ -14,10 +14,6 @@ subNetCidrBlock="10.0.1.0/24"
 port22CidrBlock="0.0.0.0/0"
 destinationCidrBlock="0.0.0.0/0"
 
-# YOUR_AWS_ACCESS_KEY=YOUR_AWS_ACCESS_KEY
-# YOUR_AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY
-# YOUR_PREFERRED_REGION=YOUR_PREFERRED_REGION
-
 softwareInstallData='#!/bin/bash
 sudo apt-get update -y
 sudo apt-get upgrade -y
