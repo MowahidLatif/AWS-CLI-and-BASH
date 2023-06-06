@@ -133,15 +133,12 @@ echo "To create your AWS instances"
 # Define your parameters 
 imageId=$(aws ec2 describe-images --owners 099720109477 --filters 'Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*' 'Name=state,Values=available' --query 'reverse(sort_by(Images, &CreationDate))[:1].ImageId' --output text)
 instanceType=t2.micro
-keyName=$(aws ec2 create-key-pair --key-name weclouddatakeypair --query 'KeyMaterial' --output text > weclouddatakeypair.pem)
-chmod 400 weclouddatakeypair.pem
 
 # Launch the master node
 masterInstanceId=$(aws ec2 run-instances \
   --image-id $imageId \
   --count 1 \
   --instance-type $instanceType \
-  --key-name $keyName \
   --security-group-ids $groupId \
   --subnet-id $subnetId \
   --user-data "$softwareInstallData" \
@@ -155,7 +152,6 @@ workerInstance1Id=$(aws ec2 run-instances \
   --image-id $imageId \
   --count 1 \
   --instance-type $instanceType \
-  --key-name $keyName \
   --security-group-ids $groupId \
   --subnet-id $subnetId \
   --user-data "$softwareInstallData" \
@@ -169,7 +165,6 @@ workerInstance2Id=$(aws ec2 run-instances \
   --image-id $imageId \
   --count 1 \
   --instance-type $instanceType \
-  --key-name $keyName \
   --security-group-ids $groupId \
   --subnet-id $subnetId \
   --user-data "$softwareInstallData" \
