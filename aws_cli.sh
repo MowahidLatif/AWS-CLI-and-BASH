@@ -2,7 +2,7 @@
 # create-aws-vpc
 #variables used in script:
 
-availabilityZone="us-east-1"
+availabilityZone="us-east-1a"
 name="weclouddata"
 vpcName="$name VPC"
 subnetName="$name Subnet"
