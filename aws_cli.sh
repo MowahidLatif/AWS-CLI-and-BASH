@@ -228,11 +228,3 @@ echo "Launched Worker Node 2 EC2 instance with ID: $workerInstance2Id."
 
 # end of create-aws-vpc
 
-# THINGS THAT NEED TO BE DONE
-<<<<<<< HEAD
-# ------- fix software installation function (makes sure software gets installed on the EC2)
-# ------- check ping process (should work if ec2 instances are connected)
-=======
-# ------- check ping process (should work if ec2 instances are connected)
-
->>>>>>> 8105190 (Spacing)
