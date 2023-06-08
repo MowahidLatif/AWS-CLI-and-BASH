@@ -82,10 +82,11 @@ echo "Creating VPC..."
 # sudo apt-get update
 
 #create vpc with cidr block /16
-aws_response=$(aws ec2 create-vpc \
+vpcId=$(aws ec2 create-vpc \
  --cidr-block "$vpcCidrBlock" \
- --output json) 
- vpcId=$(aws ec2 describe-vpcs --query "Vpcs[0].VpcId" --output text)
+ --output text \
+ --query "Vpc.VpcId" 
+ ) 
 
 #name the vpc
 aws ec2 create-tags \
@@ -103,9 +104,7 @@ modify_response=$(aws ec2 modify-vpc-attribute \
   --enable-dns-hostnames "{\"Value\":true}")
 
 #create internet gateway
-gateway_response=$(aws ec2 create-internet-gateway \
- --output json)
-gatewayId=$(aws ec2 describe-internet-gateways --query "InternetGateways[0].InternetGatewayId" --output text)
+gatewayId=$(aws ec2 create-internet-gateway --output text --query "InternetGateway.InternetGatewayId")
 
 #name the internet gateway
 aws ec2 create-tags \
@@ -118,12 +117,12 @@ attach_response=$(aws ec2 attach-internet-gateway \
  --vpc-id "$vpcId")
 
 #create subnet for vpc with /24 cidr block
-subnet_response=$(aws ec2 create-subnet \
+subnetId=$(aws ec2 create-subnet \
  --cidr-block "$subNetCidrBlock" \
  --availability-zone "$availabilityZone" \
  --vpc-id "$vpcId" \
- --output json)
-subnetId=$(aws ec2 describe-subnets --query "Subnets[0].SubnetId" --output text)
+ --output text \
+ --query "Subnet.SubnetId")
 
 #name the subnet
 aws ec2 create-tags \
@@ -136,11 +135,13 @@ modify_response=$(aws ec2 modify-subnet-attribute \
  --map-public-ip-on-launch)
 
 #create security group
-security_response=$(aws ec2 create-security-group \
+groupId=$(aws ec2 create-security-group \
  --group-name "$securityGroupName" \
  --description "Private: $securityGroupName" \
- --vpc-id "$vpcId" --output json)
-groupId=$(aws ec2 describe-security-groups --query "SecurityGroups[0].GroupId" --output text)
+ --vpc-id "$vpcId" \
+ --output text \
+ --query "GroupId"
+)
 
 #name the security group
 aws ec2 create-tags \
@@ -155,10 +156,11 @@ security_response2=$(aws ec2 authorize-security-group-ingress \
  --cidr "$port22CidrBlock")
 
 #create route table for vpc
-route_table_response=$(aws ec2 create-route-table \
+routeTableId=$(aws ec2 create-route-table \
  --vpc-id "$vpcId" \
- --output json)
-routeTableId=$(aws ec2 describe-route-tables --query "RouteTables[0].RouteTableId" --output text)
+ --output text \
+ --query "RouteTable.RouteTableId"
+)
 
 #name the route table
 aws ec2 create-tags \
