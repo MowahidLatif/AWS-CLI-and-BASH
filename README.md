@@ -1,3 +1,16 @@
+Public repo link: https://github.com/MowahidLatif/AWS-CLI-and-BASH/tree/main
+
+## Preparation
+
+- Install awscli
+`sudo apt install unzip`
+`curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"`
+`unzip awscliv2.zip`
+`sudo ./aws/install`
+
+- Add AWS Credentials with 'us-east-1' and 'json'
+`aws configure`
+
 Create bash shell script(s) that leverage the AWS CLI tool to create the following cloud architecture and set up:
 
 ## Resources in us-east-1
